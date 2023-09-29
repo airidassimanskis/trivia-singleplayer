@@ -1,6 +1,6 @@
 export default function Home() {
     return (
-    <div>
+    <div className="h-screen">
         <a href="/start">Start</a>
     </div>
     )
