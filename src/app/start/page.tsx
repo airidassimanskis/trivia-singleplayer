@@ -1,6 +1,9 @@
 "use client"
 
+// TODO: SHOW HIGHSCORES
+
 import React, { useState, useEffect } from "react"
+import Link from "next/link"
 
 interface Category {
     id: string
@@ -8,8 +11,8 @@ interface Category {
 }
 
 const Page = () => {
-    const [username, setUsername] = useState("")
-    const [numerOfQuestions, setNumerOfQuestions] = useState("")
+    const [username, setUsername] = useState("Player")
+    const [numerOfQuestions, setNumerOfQuestions] = useState<number>(10)
     const [timeLimit, setTimeLimit] = useState("0")
     const [category, setCategory] = useState("General Knowledge")
     const [categoryID, setCategoryID] = useState("9")
@@ -32,29 +35,33 @@ const Page = () => {
     }, [])
 
     const onSubmit = () => {
-        // save username, number of questions, time limit, category to localstorage
-        console.log(username, numerOfQuestions, timeLimit, category, categoryID)
-
-        const mostRecentGame = {
+        const currentGame = {
             name: username,
             questions: numerOfQuestions,
             limit: timeLimit,
             category: category,
             category_id: categoryID,
+            score: 0,
         }
-        localStorage.setItem("recent", JSON.stringify(mostRecentGame))
+
+        localStorage.setItem("current", JSON.stringify(currentGame))
     }
 
     return (
-        <div className="h-screen">
-            <form className="flex justify-center flex-col">
+        <div className="h-screen flex-wrap justify-center text-center font-medium">
+            <div className="mb-8 mt-8">
+                <h2>Previous score</h2>
+                <p>Player: 31313</p>
+
+            </div>
+            <form className="flex w-full flex-col">
                 <div className="relative mb-3">
-                    <label className="block mb-2 text-sm font-medium ">
+                    <label className="block mb-2 text-sm">
                         Name
                     </label>
                     <input
                         type="text"
-                        className="bg-neutral-700 p-2 rounded-lg text-sm font-medium"
+                        className="bg-neutral-700 p-2 rounded-lg text-sm"
                         placeholder="Player"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
@@ -63,33 +70,40 @@ const Page = () => {
                 </div>
 
                 <div className="relative mb-3">
-                    <label className="block mb-2 text-sm font-medium">
-                        Choose number of questions
+                    <label className="block mb-2 text-sm">
+                        Choose number of questions (1-50)
                     </label>
                     <input
                         type="number"
-                        className="bg-neutral-700 p-2 rounded-lg text-sm font-medium"
+                        className="bg-neutral-700 p-2 rounded-lg text-sm"
                         placeholder="1-50"
                         min={1}
                         max={50}
                         value={numerOfQuestions}
                         onChange={(e) => {
-                            // @ts-ignore
-                            if (e.target.value > 50 || e.target.value < 1) {
+                            const value = parseInt(e.target.value)
+                            if (value > 50) {
+                                setNumerOfQuestions(50)
                                 return
                             }
-                            setNumerOfQuestions(e.target.value)
+
+                            if (value < 1 || isNaN(value)) {
+                                setNumerOfQuestions(1)
+                                return
+                            }
+
+                            setNumerOfQuestions(value)
                         }}
                         required
                     />
                 </div>
 
                 <div className="relative mb-3">
-                    <label className="block mb-2 text-sm font-medium">
+                    <label className="block mb-2 text-sm">
                         Select time limit per question
                     </label>
                     <select
-                        className="bg-neutral-700 p-2 rounded-lg text-sm font-medium"
+                        className="bg-neutral-700 p-2 rounded-lg text-sm"
                         value={timeLimit}
                         onChange={(e) => setTimeLimit(e.target.value)}
                         required
@@ -104,11 +118,11 @@ const Page = () => {
                 </div>
 
                 <div className="relative mb-3">
-                    <label className="block mb-2 text-sm font-medium">
+                    <label className="block mb-2 text-sm">
                         Select category
                     </label>
                     <select
-                        className="bg-neutral-700 p-2 rounded-lg text-sm font-medium"
+                        className="bg-neutral-700 p-2 rounded-lg text-sm"
                         value={categoryID}
                         onChange={(e) => {
                             const selectedCategoryID = e.target.value
@@ -129,7 +143,12 @@ const Page = () => {
                         ))}
                     </select>
                 </div>
-                <button onClick={onSubmit}>Start</button>
+
+                <Link href="/game">
+                    <button onClick={onSubmit} disabled={!username}>
+                        Start
+                    </button>
+                </Link>
             </form>
         </div>
     )

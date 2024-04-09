@@ -1,3 +1,5 @@
+// TODO: YOUR HIGHSCORES 
+
 export default function Home() {
     return (
     <div className="h-screen">

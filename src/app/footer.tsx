@@ -12,27 +12,11 @@ export default function Footer() {
                 <div className="flex flex-wrap justify-center -mx-5 -my-2">
                     <div className="px-5 py-2">
                         <a
-                            href=""
-                            className="text-base leading-6 text-white hover:text-neutral-900"
-                        >
-                            About
-                        </a>
-                    </div>
-                    <div className="px-5 py-2">
-                        <a
                             href="https://opentdb.com/"
                             target="_blank"
                             className="text-base leading-6 text-white hover:text-neutral-900"
                         >
                             Contribute
-                        </a>
-                    </div>
-                    <div className="px-5 py-2">
-                        <a
-                            href=""
-                            className="text-base leading-6 text-white hover:text-neutral-900"
-                        >
-                            Contact
                         </a>
                     </div>
                 </div>
