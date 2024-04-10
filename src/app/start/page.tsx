@@ -12,7 +12,7 @@ interface Category {
 
 const Page = () => {
     const [username, setUsername] = useState("Player")
-    const [numerOfQuestions, setNumerOfQuestions] = useState<number>(10)
+    const [numberOfQuestions, setnumberOfQuestions] = useState<number>(10)
     const [timeLimit, setTimeLimit] = useState("0")
     const [category, setCategory] = useState("General Knowledge")
     const [categoryID, setCategoryID] = useState("9")
@@ -37,7 +37,7 @@ const Page = () => {
     const onSubmit = () => {
         const currentGame = {
             name: username,
-            questions: numerOfQuestions,
+            questions: numberOfQuestions,
             limit: timeLimit,
             category: category,
             category_id: categoryID,
@@ -45,6 +45,19 @@ const Page = () => {
         }
 
         localStorage.setItem("current", JSON.stringify(currentGame))
+
+        const getQuestions = async () => {
+            const response = await fetch(
+                `https://opentdb.com/api.php?amount=${numberOfQuestions}&category=${categoryID}&type=multiple`,
+                {
+                    method: "GET",
+                    mode: "cors",
+                }
+            )
+            const data = await response.json()
+            localStorage.setItem("questions", JSON.stringify(data))
+        }
+        getQuestions()
     }
 
     return (
@@ -52,13 +65,10 @@ const Page = () => {
             <div className="mb-8 mt-8">
                 <h2>Previous score</h2>
                 <p>Player: 31313</p>
-
             </div>
             <form className="flex w-full flex-col">
                 <div className="relative mb-3">
-                    <label className="block mb-2 text-sm">
-                        Name
-                    </label>
+                    <label className="block mb-2 text-sm">Name</label>
                     <input
                         type="text"
                         className="bg-neutral-700 p-2 rounded-lg text-sm"
@@ -79,20 +89,20 @@ const Page = () => {
                         placeholder="1-50"
                         min={1}
                         max={50}
-                        value={numerOfQuestions}
+                        value={numberOfQuestions}
                         onChange={(e) => {
                             const value = parseInt(e.target.value)
                             if (value > 50) {
-                                setNumerOfQuestions(50)
+                                setnumberOfQuestions(50)
                                 return
                             }
 
                             if (value < 1 || isNaN(value)) {
-                                setNumerOfQuestions(1)
+                                setnumberOfQuestions(1)
                                 return
                             }
 
-                            setNumerOfQuestions(value)
+                            setnumberOfQuestions(value)
                         }}
                         required
                     />
