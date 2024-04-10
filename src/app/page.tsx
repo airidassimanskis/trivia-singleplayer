@@ -1,6 +1,7 @@
 "use client"
 
-// TODO: SHOW HIGHSCORES
+// TODO: SHOW MOST RECENT SCORE AT THE TOP
+// TODO: SHOW 10 HIGHSCORES AT THE BOTTOM
 
 import React, { useState, useEffect } from "react"
 import Link from "next/link"

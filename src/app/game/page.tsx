@@ -3,8 +3,12 @@
 // TODO: MORE POINTS FOR CORRECT ANSWER STREAKS
 // TODO: RANDOMIZE ANSWER ORDER
 // TODO: SHOW CORRECT ANSWER AFTER CLICKING, INCORRECT ALL RED
+// TODO: ACTUALLY UPDATE THE SCORE AND QUESTION INSTANTLY AFTER CLICKING
+// TODO: DISPLAY THE NEXT QUESTION WITHOUT REFRESHING PAGE
 
 import React, { useState, useEffect } from "react"
+import { ToastContainer, toast } from "react-toastify"
+import "react-toastify/dist/ReactToastify.css"
 
 interface GameData {
     name: string
@@ -62,7 +66,7 @@ const Page = () => {
                     correct_answer,
                 ]
 
-                const handleAnswerClick = (answer: string) => {
+                const handleAnswerClick = async (answer: string) => {
                     setSelectedAnswer(answer)
                     if (answer === correct_answer) {
                         const currentGameString =
@@ -76,6 +80,16 @@ const Page = () => {
                                 JSON.stringify(currentGame)
                             )
                         }
+                        toast.success("+1000", {
+                            position: "bottom-center",
+                            autoClose: 1000,
+                            hideProgressBar: false,
+                            closeOnClick: true,
+                            pauseOnHover: false,
+                            draggable: true,
+                            progress: undefined,
+                            theme: "colored",
+                        })
                     } else {
                         const currentGameString =
                             localStorage.getItem("current")
@@ -88,9 +102,22 @@ const Page = () => {
                                 JSON.stringify(currentGame)
                             )
                         }
+                        toast.error("-500", {
+                            position: "bottom-center",
+                            autoClose: 1000,
+                            hideProgressBar: false,
+                            closeOnClick: true,
+                            pauseOnHover: false,
+                            draggable: true,
+                            progress: undefined,
+                            theme: "colored",
+                        })
                     }
-                    // TODO: refresh page after a timer
-                    // TODO: add notification showing -500 or +1000
+
+                    function timeout(ms: number) {
+                        return new Promise((res) => setTimeout(res, ms))
+                    }
+                    await timeout(1500)
                     window.location.reload()
                 }
 
@@ -143,7 +170,12 @@ const Page = () => {
                                     ></div>
                                 </button>
                             ))}
-                            <a href="/" className="text-center bg-red-500 p-2 m-auto mt-20 rounded-lg w-60">Give up</a>
+                            <a
+                                href="/"
+                                className="text-center bg-red-500 p-2 m-auto mt-20 rounded-lg w-60"
+                            >
+                                Give up
+                            </a>
                         </div>
                     </div>
                 )
@@ -153,6 +185,7 @@ const Page = () => {
 
     return (
         <div className="h-screen text-center font-medium">
+            <ToastContainer />
             {data ? (
                 <div>
                     {data?.questions > 0 ? (
