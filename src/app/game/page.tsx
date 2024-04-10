@@ -143,7 +143,7 @@ const Page = () => {
                                     ></div>
                                 </button>
                             ))}
-                            <a href="/start" className="text-center bg-red-500 p-2 m-auto mt-20 rounded-lg w-60">Give up</a>
+                            <a href="/" className="text-center bg-red-500 p-2 m-auto mt-20 rounded-lg w-60">Give up</a>
                         </div>
                     </div>
                 )
@@ -172,7 +172,7 @@ const Page = () => {
                                     <p>{data.score}</p>
                                 </div>
                                 <a
-                                    href="/start"
+                                    href="/"
                                     className="text-lg underline text-blue-500 self-center"
                                 >
                                     Click to play again!
