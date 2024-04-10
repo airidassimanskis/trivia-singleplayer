@@ -52,9 +52,11 @@ const Page = () => {
         if (data && data?.questions > 0) {
             if (trivia_questions) {
                 const correct_answer =
+                    // @ts-ignore
                     trivia_questions["results"][data?.questions - 1]
                         .correct_answer
                 const allAnswers = [
+                    // @ts-ignore
                     ...trivia_questions["results"][data?.questions - 1]
                         .incorrect_answers,
                     correct_answer,
@@ -98,12 +100,18 @@ const Page = () => {
                             <p>Score: {data.score}</p>
                             <p>Questions left: {data.questions}</p>
                         </div>
-                        <p className="mb-8 ">
-                            {
-                                trivia_questions["results"][data?.questions - 1]
-                                    .question
-                            }
-                        </p>
+                        {/* @ts-ignore */}
+                        <div
+                            className="mb-8"
+                            dangerouslySetInnerHTML={{
+                                __html: `<p>${
+                                    // @ts-ignore
+                                    trivia_questions["results"][
+                                        data?.questions - 1
+                                    ].question
+                                }</p>`,
+                            }}
+                        ></div>
                         <div className="flex flex-col justify-center text-center">
                             {allAnswers.map((answer: string, index: number) => (
                                 <button
@@ -128,9 +136,14 @@ const Page = () => {
                                     }}
                                     disabled={selectedAnswer !== null}
                                 >
-                                    {answer}
+                                    <div
+                                        dangerouslySetInnerHTML={{
+                                            __html: `<p>${answer}</p>`,
+                                        }}
+                                    ></div>
                                 </button>
                             ))}
+                            <a href="/start" className="text-center bg-red-500 p-2 m-auto mt-20 rounded-lg w-60">Give up</a>
                         </div>
                     </div>
                 )
