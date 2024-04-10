@@ -1,5 +1,5 @@
+// @ts-nocheck
 "use client"
-
 // TODO: MORE POINTS FOR CORRECT ANSWER STREAKS
 // TODO: RANDOMIZE ANSWER ORDER
 // TODO: SHOW CORRECT ANSWER AFTER CLICKING, INCORRECT ALL RED
@@ -39,11 +39,11 @@ const Page = () => {
         if (data && data?.questions > 0) {
             if (trivia_questions) {
                 const correct_answer =
-                    // @ts-ignore
+                    
                     trivia_questions["results"][data?.questions - 1]
                         .correct_answer
                 const allAnswers = [
-                    // @ts-ignore
+                    
                     ...trivia_questions["results"][data?.questions - 1]
                         .incorrect_answers,
                     correct_answer,
@@ -51,6 +51,18 @@ const Page = () => {
 
                 const handleAnswerClick = async (answer: string) => {
                     setSelectedAnswer(answer)
+
+                    const buttons =
+                        document.querySelectorAll("#answers > button")
+                    buttons.forEach((button: any) => {
+                        button.style.backgroundColor = "red"
+                        button.disabled = true
+
+                        if (button.innerText === correct_answer) {
+                            button.style.backgroundColor = "green"
+                        }
+                    })
+
                     if (answer === correct_answer) {
                         const currentGameString =
                             localStorage.getItem("current")
@@ -110,19 +122,21 @@ const Page = () => {
                             <p>Score: {data.score}</p>
                             <p>Questions left: {data.questions}</p>
                         </div>
-                        {/* @ts-ignore */}
                         <div
                             className="mb-8"
                             dangerouslySetInnerHTML={{
                                 __html: `<p>${
-                                    // @ts-ignore
+                                    
                                     trivia_questions["results"][
                                         data?.questions - 1
                                     ].question
                                 }</p>`,
                             }}
                         ></div>
-                        <div className="flex flex-col justify-center text-center">
+                        <div
+                            className="flex flex-col justify-center text-center"
+                            id="answers"
+                        >
                             {allAnswers.map((answer: string, index: number) => (
                                 <button
                                     key={index}
