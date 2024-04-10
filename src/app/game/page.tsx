@@ -7,7 +7,6 @@
 // TODO: DISPLAY THE NEXT QUESTION WITHOUT REFRESHING PAGE AFTER ANSWERING
 // TODO: DISPLAY THE QUESTIONS WITHOUT REFRESHING THE PAGE WHEN STARTING (it gets the info 2 times 1st one is undefined 2nd one is the good info)
 
-
 import React, { useState, useEffect } from "react"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
@@ -34,24 +33,6 @@ const Page = () => {
             setData(JSON.parse(currentGame) as GameData)
         }
     }, [])
-
-    function shuffle(array: any) {
-        var currentIndex = array.length,
-            temporaryValue,
-            randomIndex
-
-        while (0 !== currentIndex) {
-            randomIndex = Math.floor(Math.random() * currentIndex)
-            currentIndex -= 1
-
-            temporaryValue = array[currentIndex]
-            array[currentIndex] = array[randomIndex]
-            array[randomIndex] = temporaryValue
-        }
-
-        return array
-    }
-    // ! DON'T TOUCH END !
 
     const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
     const renderQuestion = () => {
@@ -154,13 +135,6 @@ const Page = () => {
                                                   correct_answer
                                                     ? "green"
                                                     : "red"
-                                                : "",
-                                        color:
-                                            selectedAnswer === answer
-                                                ? selectedAnswer ===
-                                                  correct_answer
-                                                    ? "white"
-                                                    : "white"
                                                 : "",
                                     }}
                                     disabled={selectedAnswer !== null}
