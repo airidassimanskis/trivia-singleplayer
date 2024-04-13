@@ -36,6 +36,9 @@ const Home = () => {
     }, [])
 
     const onSubmit = () => {
+        localStorage.removeItem("current")
+        localStorage.removeItem("questions")
+
         const currentGame = {
             name: username,
             questions: numberOfQuestions,

@@ -1,11 +1,7 @@
-// @ts-nocheck
 "use client"
-// TODO: MORE POINTS FOR CORRECT ANSWER STREAKS
-// TODO: RANDOMIZE ANSWER ORDER
-// TODO: SHOW CORRECT ANSWER AFTER CLICKING, INCORRECT ALL RED
-// TODO: ACTUALLY UPDATE THE SCORE AND QUESTION INSTANTLY AFTER CLICKING
-// TODO: DISPLAY THE NEXT QUESTION WITHOUT REFRESHING PAGE AFTER ANSWERING
-// TODO: DISPLAY THE QUESTIONS WITHOUT REFRESHING THE PAGE WHEN STARTING (it gets the info 2 times 1st one is undefined 2nd one is the good info)
+
+// TODO: SHOW CORRECT ANSWER: GREEN AFTER CLICKING, INCORRECT: ALL RED
+// TODO: ACTUALLY GIVE +1000 POINTS FOR ANSWERING CORRECTLY
 
 import React, { useState, useEffect } from "react"
 import { ToastContainer, toast } from "react-toastify"
@@ -20,13 +16,32 @@ interface GameData {
     score: number
 }
 
+const shuffleArray = (array: any[]) => {
+    let shuffledArray = [...array]
+    for (let i = shuffledArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1))
+        ;[shuffledArray[i], shuffledArray[j]] = [
+            shuffledArray[j],
+            shuffledArray[i],
+        ]
+    }
+    return shuffledArray
+}
+
 const Page = () => {
     const [data, setData] = useState<GameData | null>(null)
-    const [trivia_questions, setTrivia_questions] = useState({})
+    const [triviaQuestions, setTriviaQuestions] = useState<any>(null)
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0)
+    const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
+    const [allAnswers, setAllAnswers] = useState<string[]>([])
 
     useEffect(() => {
         const getQuestions = localStorage.getItem("questions")
-        setTrivia_questions(JSON.parse(getQuestions || "{}"))
+        const parsedQuestions = JSON.parse(getQuestions || "{}")
+        if (!parsedQuestions || Object.keys(parsedQuestions).length === 0) {
+        } else {
+            setTriviaQuestions(parsedQuestions)
+        }
 
         const currentGame = localStorage.getItem("current")
         if (currentGame) {
@@ -34,142 +49,116 @@ const Page = () => {
         }
     }, [])
 
-    const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
+    useEffect(() => {
+        if (
+            triviaQuestions &&
+            triviaQuestions.results &&
+            triviaQuestions.results.length > currentQuestionIndex
+        ) {
+            const currentQuestion =
+                triviaQuestions.results[currentQuestionIndex]
+            const correctAnswer = currentQuestion.correct_answer
+            let answers = [...currentQuestion.incorrect_answers, correctAnswer]
+            setAllAnswers(shuffleArray(answers))
+        }
+    }, [triviaQuestions, currentQuestionIndex])
+
+    const handleAnswerClick = async (answer: string) => {
+        if (!data) return
+
+        setSelectedAnswer(answer)
+        // @ts-ignore
+        const isCorrect = answer === data.correctAnswer
+        let scoreChange
+        if (isCorrect) {
+            scoreChange = 1000
+        } else {
+            scoreChange = -500
+        }
+        const updatedData = {
+            ...data,
+            score: data.score + scoreChange,
+            questions: data.questions - 1,
+        }
+        setData(updatedData)
+        localStorage.setItem("current", JSON.stringify(updatedData))
+
+        toast(isCorrect ? "+1000" : "-500", {
+            position: "bottom-center",
+            autoClose: 1000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: false,
+            draggable: true,
+            progress: undefined,
+            theme: "colored",
+        })
+
+        // Do not shuffle again, just wait and move to the next question
+        setTimeout(() => {
+            setCurrentQuestionIndex(currentQuestionIndex + 1)
+            setSelectedAnswer(null) // Reset for the next question
+        }, 1500)
+    }
+
     const renderQuestion = () => {
-        if (data && data?.questions > 0) {
-            if (trivia_questions) {
-                const correct_answer =
-                    
-                    trivia_questions["results"][data?.questions - 1]
-                        .correct_answer
-                const allAnswers = [
-                    
-                    ...trivia_questions["results"][data?.questions - 1]
-                        .incorrect_answers,
-                    correct_answer,
-                ]
+        if (
+            data &&
+            triviaQuestions &&
+            triviaQuestions.results &&
+            triviaQuestions.results.length > currentQuestionIndex
+        ) {
+            const currentQuestion =
+                triviaQuestions.results[currentQuestionIndex]
+            const correctAnswer = currentQuestion.correct_answer
 
-                const handleAnswerClick = async (answer: string) => {
-                    setSelectedAnswer(answer)
-
-                    const buttons =
-                        document.querySelectorAll("#answers > button")
-                    buttons.forEach((button: any) => {
-                        button.style.backgroundColor = "red"
-                        button.disabled = true
-
-                        if (button.innerText === correct_answer) {
-                            button.style.backgroundColor = "green"
-                        }
-                    })
-
-                    if (answer === correct_answer) {
-                        const currentGameString =
-                            localStorage.getItem("current")
-                        if (currentGameString) {
-                            const currentGame = JSON.parse(currentGameString)
-                            currentGame.score += 1000
-                            currentGame.questions -= 1
-                            localStorage.setItem(
-                                "current",
-                                JSON.stringify(currentGame)
-                            )
-                        }
-                        toast.success("+1000", {
-                            position: "bottom-center",
-                            autoClose: 1000,
-                            hideProgressBar: false,
-                            closeOnClick: true,
-                            pauseOnHover: false,
-                            draggable: true,
-                            progress: undefined,
-                            theme: "colored",
-                        })
-                    } else {
-                        const currentGameString =
-                            localStorage.getItem("current")
-                        if (currentGameString) {
-                            const currentGame = JSON.parse(currentGameString)
-                            currentGame.score -= 500
-                            currentGame.questions -= 1
-                            localStorage.setItem(
-                                "current",
-                                JSON.stringify(currentGame)
-                            )
-                        }
-                        toast.error("-500", {
-                            position: "bottom-center",
-                            autoClose: 1000,
-                            hideProgressBar: false,
-                            closeOnClick: true,
-                            pauseOnHover: false,
-                            draggable: true,
-                            progress: undefined,
-                            theme: "colored",
-                        })
-                    }
-
-                    function timeout(ms: number) {
-                        return new Promise((res) => setTimeout(res, ms))
-                    }
-                    await timeout(1500)
-                    window.location.reload()
-                }
-
-                return (
-                    <div className="font-medium">
-                        <div className="flex flex-wrap justify-around mb-8">
-                            <p>Score: {data.score}</p>
-                            <p>Questions left: {data.questions}</p>
-                        </div>
-                        <div
-                            className="mb-8"
-                            dangerouslySetInnerHTML={{
-                                __html: `<p>${
-                                    
-                                    trivia_questions["results"][
-                                        data?.questions - 1
-                                    ].question
-                                }</p>`,
-                            }}
-                        ></div>
-                        <div
-                            className="flex flex-col justify-center text-center"
-                            id="answers"
-                        >
-                            {allAnswers.map((answer: string, index: number) => (
-                                <button
-                                    key={index}
-                                    onClick={() => handleAnswerClick(answer)}
-                                    className="text-center bg-neutral-700 p-2 m-auto mb-8 rounded-lg w-60"
-                                    style={{
-                                        backgroundColor:
-                                            selectedAnswer === answer
-                                                ? selectedAnswer ===
-                                                  correct_answer
-                                                    ? "green"
-                                                    : "red"
-                                                : "",
-                                    }}
-                                    disabled={selectedAnswer !== null}
-                                >
-                                    <div
-                                        dangerouslySetInnerHTML={{
-                                            __html: `<p>${answer}</p>`,
-                                        }}
-                                    ></div>
-                                </button>
-                            ))}
-                            <a
-                                href="/"
-                                className="text-center bg-red-500 p-2 m-auto mt-20 rounded-lg w-60"
-                            >
-                                Give up
-                            </a>
-                        </div>
+            return (
+                <div className="font-medium">
+                    <div className="flex flex-wrap justify-around mb-8">
+                        <p>Score: {data.score}</p>
+                        <p>Questions left: {data.questions}</p>
                     </div>
-                )
-            }
+                    <div
+                        className="mb-8"
+                        dangerouslySetInnerHTML={{
+                            __html: `<p>${currentQuestion.question}</p>`,
+                        }}
+                    ></div>
+                    <div
+                        className="flex flex-col justify-center text-center"
+                        id="answers"
+                    >
+                        {allAnswers.map((answer: string, index: number) => (
+                            <button
+                                key={index}
+                                onClick={() => handleAnswerClick(answer)}
+                                className={`text-center bg-neutral-700 p-2 m-auto mb-8 rounded-lg w-60 ${
+                                    selectedAnswer === answer
+                                        ? answer === correctAnswer
+                                            ? "bg-green-500"
+                                            : "bg-red-500"
+                                        : ""
+                                }`}
+                            >
+                                <div
+                                    dangerouslySetInnerHTML={{
+                                        __html: `<p>${answer}</p>`,
+                                    }}
+                                ></div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )
+        } else {
+            // setTimeout(() => {
+            //     window.location.href = "/game"
+            // }, 1500)
+            return (
+                <div>
+                    <p>ASDASD.</p>
+                </div>
+            )
         }
     }
 
@@ -178,7 +167,7 @@ const Page = () => {
             <ToastContainer />
             {data ? (
                 <div>
-                    {data?.questions > 0 ? (
+                    {data.questions > 0 ? (
                         <div>
                             <p className="mt-8">Category: {data.category}</p>
                             <div className="flex justify-around text-lg font-medium mt-8 mb-8">
@@ -187,24 +176,25 @@ const Page = () => {
                             {renderQuestion()}
                         </div>
                     ) : (
-                        <div>
-                            <div className="h-screen flex flex-col justify-evenly">
-                                <div className="flex flex-col justify-center text-center">
-                                    <p className="mb-4">YOUR SCORE</p>
-                                    <p>{data.name}</p>
-                                    <p>{data.score}</p>
-                                </div>
-                                <a
-                                    href="/"
-                                    className="text-lg underline text-blue-500 self-center"
-                                >
-                                    Click to play again!
-                                </a>
+                        <div className="h-screen flex flex-col justify-evenly">
+                            <div className="flex flex-col justify-center text-center">
+                                <p className="mb-4">YOUR SCORE</p>
+                                <p>{data.name}</p>
+                                <p>{data.score}</p>
                             </div>
+                            <a
+                                href="/"
+                                className="text-lg underline text-blue-500 self-center"
+                            >
+                                Click to play again!
+                            </a>
                         </div>
                     )}
                 </div>
-            ) : null}
+            ) : (
+                // ! IF USER ACCIDENTALLY WENT TO THE LINK REDIRECTS TO HOMEPAGE, DON'T CHANGE ! \\
+                window.location.href = "/"
+            )}
         </div>
     )
 }
