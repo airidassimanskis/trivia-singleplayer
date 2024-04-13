@@ -59,13 +59,19 @@ const Page = () => {
     const [allAnswers, setAllAnswers] = useState<string[]>([])
 
     useEffect(() => {
+        window.onbeforeunload = () => true
+        return () => {
+            window.onbeforeunload = null
+        }
+    }, [])
+
+    useEffect(() => {
         if (
             triviaQuestions &&
             triviaQuestions.results &&
-            triviaQuestions.results.length > currentQuestionIndex
+            triviaQuestions.results.length > 0
         ) {
-            const currentQuestion =
-                triviaQuestions.results[currentQuestionIndex]
+            const currentQuestion = triviaQuestions.results[0]
             const correctAnswer = currentQuestion.correct_answer
             let answers = [...currentQuestion.incorrect_answers, correctAnswer]
             setAllAnswers(shuffleArray(answers))
@@ -83,7 +89,7 @@ const Page = () => {
 
         // fix answers that are HTML text to be plain text
         const correct_answer = convertHtmlToText(
-            triviaQuestions.results[currentQuestionIndex].correct_answer
+            triviaQuestions.results[0].correct_answer
         )
         answer = convertHtmlToText(answer)
 
@@ -95,7 +101,6 @@ const Page = () => {
             questions: data.questions - 1,
         }
         setData(updatedData)
-        localStorage.setItem("current", JSON.stringify(updatedData))
 
         const buttons = document.querySelectorAll("#answers > button")
         buttons.forEach((button: any) => {
@@ -123,6 +128,9 @@ const Page = () => {
 
         // Do not shuffle again, just wait and move to the next question
         setTimeout(() => {
+            let updatedQuestions = { ...triviaQuestions }
+            updatedQuestions.results.splice(0, 1)
+            setTQ(updatedQuestions)
             setCurrentQuestionIndex(currentQuestionIndex + 1)
             const buttons = document.querySelectorAll("#answers > button")
             buttons.forEach((button: any) => {
@@ -132,12 +140,13 @@ const Page = () => {
             })
         }, 3000)
     }
-
     const renderQuestion = () => {
         if (
-            data && triviaQuestions.results && triviaQuestions.results.length > currentQuestionIndex
+            data &&
+            triviaQuestions.results &&
+            triviaQuestions.results.length > 0
         ) {
-            const currentQuestion = triviaQuestions.results[currentQuestionIndex]
+            const currentQuestion = triviaQuestions.results[0]
 
             return (
                 <div className="font-medium">
@@ -197,6 +206,9 @@ const Page = () => {
     return (
         <div className="h-screen text-center font-medium">
             <ToastContainer />
+            <p className="text-center text-red-500 mt-4">
+                DO NOT REFRESH THIS PAGE, IT MAY BREAK THE WEBSITE AS THIS PROJECT IS STILL W.I.P
+            </p>
             {data ? (
                 <div>
                     {data.questions > 0 ? (

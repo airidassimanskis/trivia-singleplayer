@@ -9,3 +9,6 @@ body {
   background-color: rgb(23 23 23);
 }
 
+nextjs-portal {
+  display: none;
+}
