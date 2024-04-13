@@ -1,19 +1,8 @@
 "use client"
 
-// TODO: LOAD THE LOCALSTORAGE FROM THE FIRST TRY WITHOUT REFRESHING THE PAGE
-
 import React, { useState, useEffect } from "react"
 import { ToastContainer, toast } from "react-toastify"
 import "react-toastify/dist/ReactToastify.css"
-
-interface GameData {
-    name: string
-    questions: number
-    limit: string
-    category: string
-    category_id: string
-    score: number
-}
 
 const shuffleArray = (array: any[]) => {
     let shuffledArray = [...array]
@@ -27,13 +16,45 @@ const shuffleArray = (array: any[]) => {
     return shuffledArray
 }
 
+function useLocalStorage(key: string, initialValue: any) {
+    const [storedValue, setStoredValue] = useState(() => {
+        try {
+            const item = window.localStorage.getItem(key)
+            return item ? JSON.parse(item) : initialValue
+        } catch (error) {
+            console.error(error)
+            return initialValue
+        }
+    })
+
+    useEffect(() => {
+        try {
+            const item = window.localStorage.getItem(key)
+            if (item !== JSON.stringify(storedValue)) {
+                setStoredValue(item ? JSON.parse(item) : initialValue)
+            }
+        } catch (error) {
+            console.error(error)
+        }
+    }, [key, initialValue, storedValue])
+
+    const setValue = (value: any) => {
+        try {
+            const valueToStore =
+                value instanceof Function ? value(storedValue) : value
+            setStoredValue(valueToStore)
+            window.localStorage.setItem(key, JSON.stringify(valueToStore))
+        } catch (error) {
+            console.error(error)
+        }
+    }
+
+    return [storedValue, setValue]
+}
+
 const Page = () => {
-    const [data, setData] = useState(
-        JSON.parse(localStorage.getItem("current") || "{}") as GameData
-    )
-    const [triviaQuestions, setTriviaQuestions] = useState(
-        JSON.parse(localStorage.getItem("questions") || "{}")
-    )
+    const [data, setData] = useLocalStorage("current", {})
+    const [triviaQuestions, setTQ] = useLocalStorage("questions", {})
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0)
     const [allAnswers, setAllAnswers] = useState<string[]>([])
 
@@ -62,7 +83,8 @@ const Page = () => {
 
         // fix answers that are HTML text to be plain text
         const correct_answer = convertHtmlToText(
-            triviaQuestions.results[currentQuestionIndex].correct_answer)
+            triviaQuestions.results[currentQuestionIndex].correct_answer
+        )
         answer = convertHtmlToText(answer)
 
         const isCorrect = answer === correct_answer
@@ -96,7 +118,7 @@ const Page = () => {
             pauseOnHover: false,
             draggable: true,
             progress: undefined,
-            theme: "colored",
+            theme: "dark",
         })
 
         // Do not shuffle again, just wait and move to the next question
@@ -113,13 +135,9 @@ const Page = () => {
 
     const renderQuestion = () => {
         if (
-            data &&
-            triviaQuestions &&
-            triviaQuestions.results &&
-            triviaQuestions.results.length > currentQuestionIndex
+            data && triviaQuestions.results && triviaQuestions.results.length > currentQuestionIndex
         ) {
-            const currentQuestion =
-                triviaQuestions.results[currentQuestionIndex]
+            const currentQuestion = triviaQuestions.results[currentQuestionIndex]
 
             return (
                 <div className="font-medium">
@@ -153,14 +171,15 @@ const Page = () => {
                             </button>
                         ))}
                     </div>
-                        <button 
+                    <button
                         className="text-center bg-red-800 p-2 m-auto mb-8 rounded-lg w-60 mt-20"
                         onClick={() => {
                             localStorage.clear()
                             window.location.href = "/"
-                        }}>
-                            Quit
-                        </button>
+                        }}
+                    >
+                        Quit
+                    </button>
                 </div>
             )
         } else {

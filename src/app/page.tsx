@@ -36,8 +36,7 @@ const Home = () => {
     }, [])
 
     const onSubmit = () => {
-        localStorage.removeItem("current")
-        localStorage.removeItem("questions")
+        localStorage.clear()
 
         const currentGame = {
             name: username,
