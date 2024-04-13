@@ -1,7 +1,6 @@
 "use client"
 
-// TODO: SHOW CORRECT ANSWER: GREEN AFTER CLICKING, INCORRECT: ALL RED
-// TODO: ACTUALLY GIVE +1000 POINTS FOR ANSWERING CORRECTLY
+// TODO: LOAD THE LOCALSTORAGE FROM THE FIRST TRY WITHOUT REFRESHING THE PAGE
 
 import React, { useState, useEffect } from "react"
 import { ToastContainer, toast } from "react-toastify"
@@ -29,25 +28,14 @@ const shuffleArray = (array: any[]) => {
 }
 
 const Page = () => {
-    const [data, setData] = useState<GameData | null>(null)
-    const [triviaQuestions, setTriviaQuestions] = useState<any>(null)
+    const [data, setData] = useState(
+        JSON.parse(localStorage.getItem("current") || "{}") as GameData
+    )
+    const [triviaQuestions, setTriviaQuestions] = useState(
+        JSON.parse(localStorage.getItem("questions") || "{}")
+    )
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0)
-    const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
     const [allAnswers, setAllAnswers] = useState<string[]>([])
-
-    useEffect(() => {
-        const getQuestions = localStorage.getItem("questions")
-        const parsedQuestions = JSON.parse(getQuestions || "{}")
-        if (!parsedQuestions || Object.keys(parsedQuestions).length === 0) {
-        } else {
-            setTriviaQuestions(parsedQuestions)
-        }
-
-        const currentGame = localStorage.getItem("current")
-        if (currentGame) {
-            setData(JSON.parse(currentGame) as GameData)
-        }
-    }, [])
 
     useEffect(() => {
         if (
@@ -66,15 +54,19 @@ const Page = () => {
     const handleAnswerClick = async (answer: string) => {
         if (!data) return
 
-        setSelectedAnswer(answer)
-        // @ts-ignore
-        const isCorrect = answer === data.correctAnswer
-        let scoreChange
-        if (isCorrect) {
-            scoreChange = 1000
-        } else {
-            scoreChange = -500
+        const convertHtmlToText = (html: any) => {
+            const tempElement = document.createElement("div")
+            tempElement.innerHTML = html
+            return tempElement.textContent || tempElement.innerText || ""
         }
+
+        // fix answers that are HTML text to be plain text
+        const correct_answer = convertHtmlToText(
+            triviaQuestions.results[currentQuestionIndex].correct_answer)
+        answer = convertHtmlToText(answer)
+
+        const isCorrect = answer === correct_answer
+        const scoreChange = isCorrect ? 1000 : -250
         const updatedData = {
             ...data,
             score: data.score + scoreChange,
@@ -83,9 +75,22 @@ const Page = () => {
         setData(updatedData)
         localStorage.setItem("current", JSON.stringify(updatedData))
 
-        toast(isCorrect ? "+1000" : "-500", {
+        const buttons = document.querySelectorAll("#answers > button")
+        buttons.forEach((button: any) => {
+            button.className =
+                "text-center bg-red-500 p-2 m-auto mb-8 rounded-lg w-60"
+            button.disabled = true
+
+            if (button.innerText === correct_answer) {
+                button.className =
+                    "text-center bg-green-500 p-2 m-auto mb-8 rounded-lg w-60"
+                button.disabled = true
+            }
+        })
+
+        toast(isCorrect ? "+1000" : "-250", {
             position: "bottom-center",
-            autoClose: 1000,
+            autoClose: 2500,
             hideProgressBar: false,
             closeOnClick: true,
             pauseOnHover: false,
@@ -97,8 +102,13 @@ const Page = () => {
         // Do not shuffle again, just wait and move to the next question
         setTimeout(() => {
             setCurrentQuestionIndex(currentQuestionIndex + 1)
-            setSelectedAnswer(null) // Reset for the next question
-        }, 1500)
+            const buttons = document.querySelectorAll("#answers > button")
+            buttons.forEach((button: any) => {
+                button.className =
+                    "text-center bg-neutral-700 p-2 m-auto mb-8 rounded-lg w-60"
+                button.disabled = false
+            })
+        }, 3000)
     }
 
     const renderQuestion = () => {
@@ -110,7 +120,6 @@ const Page = () => {
         ) {
             const currentQuestion =
                 triviaQuestions.results[currentQuestionIndex]
-            const correctAnswer = currentQuestion.correct_answer
 
             return (
                 <div className="font-medium">
@@ -132,13 +141,9 @@ const Page = () => {
                             <button
                                 key={index}
                                 onClick={() => handleAnswerClick(answer)}
-                                className={`text-center bg-neutral-700 p-2 m-auto mb-8 rounded-lg w-60 ${
-                                    selectedAnswer === answer
-                                        ? answer === correctAnswer
-                                            ? "bg-green-500"
-                                            : "bg-red-500"
-                                        : ""
-                                }`}
+                                className={
+                                    "text-center bg-neutral-700 p-2 m-auto mb-8 rounded-lg w-60"
+                                }
                             >
                                 <div
                                     dangerouslySetInnerHTML={{
@@ -148,12 +153,20 @@ const Page = () => {
                             </button>
                         ))}
                     </div>
+                        <button 
+                        className="text-center bg-red-800 p-2 m-auto mb-8 rounded-lg w-60 mt-20"
+                        onClick={() => {
+                            localStorage.clear()
+                            window.location.href = "/"
+                        }}>
+                            Quit
+                        </button>
                 </div>
             )
         } else {
             // setTimeout(() => {
             //     window.location.href = "/game"
-            // }, 1500)
+            // }, 3000)
             return (
                 <div>
                     <p>ASDASD.</p>
@@ -193,7 +206,7 @@ const Page = () => {
                 </div>
             ) : (
                 // ! IF USER ACCIDENTALLY WENT TO THE LINK REDIRECTS TO HOMEPAGE, DON'T CHANGE ! \\
-                window.location.href = "/"
+                (window.location.href = "/")
             )}
         </div>
     )
