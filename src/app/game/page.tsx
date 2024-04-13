@@ -207,7 +207,7 @@ const Page = () => {
         <div className="h-screen text-center font-medium">
             <ToastContainer />
             <p className="text-center text-red-500 mt-4">
-                DO NOT REFRESH THIS PAGE, IT MAY BREAK THE WEBSITE AS THIS PROJECT IS STILL W.I.P
+                ONLY REFRESH THE PAGE WHEN QUESTIONS AND ANSWERS DO NOT APPEAR! W.I.P
             </p>
             {data ? (
                 <div>

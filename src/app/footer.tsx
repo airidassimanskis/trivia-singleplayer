@@ -15,7 +15,7 @@ export default function Footer() {
                         </a>
                     </div>
                 </div>
-                {/* <p className="mt-8 text-base leading-6 text-center">
+                <p className="mt-8 text-base leading-6 text-center">
                     <a
                         className="text-neutral-500 hover:text-neutral-900"
                         href="https://airidassimanskis.vercel.app/"
@@ -23,7 +23,7 @@ export default function Footer() {
                     >
                         © 2023 Airidas Šimanskis
                     </a>
-                </p> */}
+                </p>
             </div>
         </footer>
     )
